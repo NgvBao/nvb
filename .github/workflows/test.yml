@@ -1,0 +1,32 @@
+name: demo CI/CD
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Bước 1: Checkout code từ repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Bước 2: Cài Python (chọn version cần)
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Bước 3: Cài dependencies (nếu có file requirements.txt)
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      # Bước 4: Chạy ứng dụng Python
+      - name: Run Python script
+        run: |
+          python main.py
