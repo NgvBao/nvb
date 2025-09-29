@@ -1,0 +1,411 @@
+import React from "react";
+import Sidebar from "../components/sidebar";
+import ModalForm from "../components/Modal";
+import Button from "../components/button";
+import GenericTable from "../components/table";
+import type { Column } from "../components/table";
+import "../styles/ProjectManagementPage.css";
+
+export type Project = {
+  id: string;
+  name: string;
+  windfarmCount: number;
+  description: string;
+  performance: string;
+  createdAt: string;
+  status: string;
+};
+
+type ProjectManagementPageProps = {
+  // Data + search
+  projects: Project[];
+  searchTerm: string;
+  setSearchTerm: (s: string) => void;
+
+  // Create modal
+  showCreateModal: boolean;
+  newName: string;
+  setNewName: (s: string) => void;
+  newDescription: string;
+  setNewDescription: (s: string) => void;
+  onCreateClick: () => void;
+  onCancelCreate: () => void;
+  onCreateSubmit: (name: string, description: string) => void;
+  loadingCreate?: boolean;
+
+  // Actions (từ Logic)
+  onManageClick?: (p: Project) => void;
+  onDeleteClick?: (p: Project) => void;
+
+  // Loading trong bảng & xoá theo hàng
+  loadingList?: boolean;
+  loadingDeleteId?: string | null; // per-row spinner
+};
+
+const statusClass = (s: string) => {
+  switch (s) {
+    case "ACTIVE":
+      return "status-active";
+    case "NOT_STARTED":
+      return "status-notstarted";
+    case "PAUSED":
+      return "status-paused";
+    case "COMPLETED":
+      return "status-completed";
+    default:
+      return "status-unknown";
+  }
+};
+
+// ---- Format hh:mm:ss dd/mm/yy (local time) ----
+const formatDate = (iso?: string) => {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "-";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const dd = pad(d.getDate());
+  const mm = pad(d.getMonth() + 1);
+  const yy = String(d.getFullYear()).slice(-2);
+  const hh = pad(d.getHours());
+  const mi = pad(d.getMinutes());
+  const ss = pad(d.getSeconds());
+  return `${hh}:${mi}:${ss} ${dd}/${mm}/${yy}`;
+};
+
+const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
+  projects,
+  searchTerm,
+  setSearchTerm,
+
+  showCreateModal,
+  newName,
+  setNewName,
+  newDescription,
+  setNewDescription,
+  onCreateClick,
+  onCancelCreate,
+  onCreateSubmit,
+  loadingCreate,
+
+  onManageClick,
+  onDeleteClick,
+
+  loadingList,
+  loadingDeleteId,
+}) => {
+<<<<<<< HEAD
+  // ===== Create Modal fields =====
+  const createFields = [
+    { key: "name", label: "Project Name", editable: true },
+    { key: "description", label: "Description", editable: true, type: "textarea" as const },
+=======
+  // ===== Fields (Detail) =====
+  const detailFields = [
+    { key: "name", label: "Project Name", editable: true },
+    { key: "windfarmCount", label: "Windfarms", editable: false },
+    {
+      key: "description",
+      label: "Description",
+      editable: true,
+      type: "textarea" as const,
+    },
+    { key: "performance", label: "Performance", editable: false },
+    { key: "createdAt", label: "Created At", editable: false },
+    { key: "status", label: "Status", editable: false },
+  ];
+
+  const detailValues: Record<string, string> = detailData
+    ? {
+        name: detailData.name ?? "",
+        windfarmCount: String(detailData.windfarmCount ?? ""),
+        description: detailData.description ?? "",
+        performance: detailData.performance ?? "",
+        createdAt: detailData.createdAt ?? "",
+        status: String(detailData.status ?? ""),
+      }
+    : {
+        name: "",
+        windfarmCount: "",
+        description: "",
+        performance: "",
+        createdAt: "",
+        status: "",
+      };
+
+  const handleDetailFieldChange = (key: string, value: string) => {
+    if (!detailData) return;
+    if (key === "name") onDetailChange({ ...detailData, name: value });
+    if (key === "description")
+      onDetailChange({ ...detailData, description: value });
+  };
+
+  // ===== Fields (Create) =====
+  const createFields = [
+    { key: "name", label: "Project Name", editable: true },
+    {
+      key: "description",
+      label: "Description",
+      editable: true,
+      type: "textarea" as const,
+    },
+>>>>>>> e254060 (Backup code cá nhân trước khi merge code mới của team)
+  ];
+  const createValues: Record<string, string> = {
+    name: newName,
+    description: newDescription,
+  };
+
+  // ===== Columns =====
+  const columns: Column<Project>[] = [
+    {
+      key: "index",
+      header: "#",
+      size: 0.02,
+      align: "center",
+      sortable: false,
+      render: (_row, i) => i + 1,
+      headerClassName: "col-center",
+      className: "col-center",
+    },
+    {
+      key: "name",
+      header: "Project",
+      size: 0.24,
+      sortable: true,
+      sortAccessor: (r) => r.name.toLowerCase(),
+      className: "project",
+    },
+    {
+      key: "createdAt",
+      header: "Created",
+      size: 0.16,
+      align: "right",
+      sortable: true,
+      sortAccessor: (r) => r.createdAt || "",
+      className: "created",
+      headerClassName: "col-right",
+      render: (p) => formatDate(p.createdAt), // 👈 chuẩn hóa hiển thị
+    },
+    {
+      key: "windfarmCount",
+      header: "Windfarms",
+      size: 0.12,
+<<<<<<< HEAD
+      align: "center",
+      sortable: true,
+      sortAccessor: (r) => r.windfarmCount,
+      className: "windfarms col-center",
+      headerClassName: "col-center",
+      render: (p) => p.windfarmCount,
+    },
+    {
+      key: "performance",
+      header: "Performance",
+      size: 0.16,
+      sortable: false,
+      className: "performance",
+    },
+=======
+      className: "windfarms",
+      render: (p) => (
+        <span
+          style={{
+            display: "inline-block",
+            width: "100%",
+            textAlign: "center",
+          }}
+        >
+          {p.windfarmCount}
+        </span>
+      ),
+    },
+    {
+      key: "performance",
+      header: "Performance",
+      size: 0.16,
+      className: "performance",
+    },
+>>>>>>> e254060 (Backup code cá nhân trước khi merge code mới của team)
+    {
+      key: "status",
+      header: "Status",
+      size: 0.12,
+<<<<<<< HEAD
+      align: "center",
+      sortable: true,
+      sortAccessor: (r) => r.status,
+      className: "status col-center",
+      headerClassName: "col-center",
+      render: (p) => <span className={statusClass(String(p.status))}>{p.status}</span>,
+=======
+      className: "status",
+      render: (p) => (
+        <span className={statusClass(String(p.status))}>{p.status}</span>
+      ),
+>>>>>>> e254060 (Backup code cá nhân trước khi merge code mới của team)
+    },
+    {
+      key: "actions",
+      header: "Action",
+      size: 0.18,
+      align: "left",
+      sortable: false,
+      className: "action-cell",
+      render: (p) => (
+        <>
+          <Button
+            variant="detail"
+            style={{ marginRight: "0.5rem" }}
+<<<<<<< HEAD
+            onClick={(e: any) => {
+              e.stopPropagation();
+              onManageClick?.(p);
+            }}
+          >
+            Management
+          </Button>
+          <Button
+            variant="delete"
+            onClick={(e: any) => {
+              e.stopPropagation();
+              onDeleteClick?.(p);
+            }}
+            loading={loadingDeleteId === p.id}
+=======
+            onClick={() => onOpenDetail(p)}
+          >
+            Detail
+          </Button>
+          <Button
+            variant="delete"
+            onClick={() => onDeleteDetail()}
+            loading={
+              !!loadingDeleteDetail /* có thể đổi theo per-row id nếu cần */
+            }
+>>>>>>> e254060 (Backup code cá nhân trước khi merge code mới của team)
+          >
+            Delete
+          </Button>
+        </>
+      ),
+    },
+  ];
+
+  return (
+    <div className="ProjectManagementPage">
+      {/* Sidebar */}
+      {/* <aside className="sidebar-content">
+        <Sidebar />
+      </aside> */}
+
+      {/* Main */}
+      <main className="main-content">
+        <div className="content-body">
+          {/* Toolbar */}
+          <div className="toolbar">
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search project name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <div className="toolbar-actions">
+              <Button variant="submit" onClick={onCreateClick} loading={!!loadingCreate}>
+                + Create
+              </Button>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="table-section">
+            <GenericTable<Project>
+              data={projects}
+              columns={columns}
+              loading={!!loadingList}
+              emptyText="No projects"
+              stickyHeader
+              cellProps={(_row, col) =>
+                col.key === "actions" ? { onClick: (e) => e.stopPropagation() } : {}
+              }
+              // onRowClick={(p) => onManageClick?.(p)}
+              rowClassName={(_r) => undefined}
+            />
+          </div>
+        </div>
+      </main>
+
+      {/* Create Modal */}
+      {showCreateModal && (
+        <ModalForm
+          isOpen={showCreateModal}
+          header="Create Project"
+          fields={createFields}
+          values={createValues}
+          onChange={(key, v) => {
+            if (key === "name") setNewName(v);
+            if (key === "description") setNewDescription(v);
+          }}
+          onClose={onCancelCreate}
+          onSave={() => onCreateSubmit(newName.trim(), newDescription.trim())}
+          footer={
+            <>
+              <Button variant="cancel" onClick={onCancelCreate}>
+                Cancel
+              </Button>
+              <Button
+                variant="submit"
+                onClick={() =>
+                  onCreateSubmit(newName.trim(), newDescription.trim())
+                }
+                loading={!!loadingCreate}
+                disabled={!newName.trim()}
+              >
+                Create
+              </Button>
+            </>
+          }
+        />
+      )}
+<<<<<<< HEAD
+=======
+
+      {/* Detail Modal */}
+      {detailData && (
+        <ModalForm
+          isOpen={!!detailData}
+          header="Project Detail"
+          fields={detailFields as any}
+          values={detailValues}
+          onChange={handleDetailFieldChange}
+          onClose={onCloseDetail}
+          onSave={onSaveDetail}
+          footer={
+            <>
+              <Button variant="cancel" onClick={onCloseDetail}>
+                Close
+              </Button>
+              <Button
+                variant="delete"
+                onClick={onDeleteDetail}
+                loading={!!loadingDeleteDetail}
+              >
+                Delete
+              </Button>
+              <Button
+                variant="submit"
+                onClick={onSaveDetail}
+                loading={!!loadingSaveDetail}
+              >
+                Save
+              </Button>
+            </>
+          }
+        />
+      )}
+>>>>>>> e254060 (Backup code cá nhân trước khi merge code mới của team)
+    </div>
+  );
+};
+
+export default ProjectManagementPage;
