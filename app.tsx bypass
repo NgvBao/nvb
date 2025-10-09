@@ -1,0 +1,186 @@
+// src/App.tsx
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
+import { UserProvider, useUser } from "../src/context";
+import MainLayout from "./components/MainLayout"; // ✅ layout có Sidebar
+
+// ===== Bypass login cho môi trường dev =====
+const DEV_BYPASS = true;
+
+// Public pages
+import LoginLogic from "./logic/LoginLogic";
+import OtpSignupLogic from "./logic/OtpSignupLogic";
+import OtpLoginLogic from "./logic/OtpLoginLogic";
+import SignUpLogic from "./logic/SignUplogic";
+import ForgotMailPasswordLogic from "./logic/ForgotMailPasswordLogic";
+import ForgotChangePasswordLogic from "./logic/ForgotChangePasswordLogic";
+import OtpChangeLogic from "./logic/OtpChangeLogic";
+
+// Protected pages (có Sidebar)
+import ProjectLogic from "./logic/ProjectLogic";
+import SettingLogic from "./logic/SettingLogic";
+import SessionsListLogic from "./logic/SessionsListLoic";
+import UserManagementLogic from "./logic/UserManagementLogic";
+import ProjectManagementLogic from "./logic/ProjectManagementLogic";
+import MemberProjectLogic from "./logic/MemberProjectLogic";
+import WindfarmLogic from "./logic/WinfarmLogic";
+import WindfarmAdminLogic from "./logic/WindfarmAdminLogic";
+import TurbinePageLogic from "./logic/TurbinePageLogic";
+import ManagePage from "./pages/ManagePage";
+
+// ===== Guards =====
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  if (DEV_BYPASS) return <>{children}</>;
+
+  const { user, loading } = useUser();
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  if (DEV_BYPASS) return <Navigate to="/project" replace />;
+  const { user, loading } = useUser();
+  if (loading) return <div>Loading...</div>;
+  if (user) return <Navigate to="/project" replace />;
+  return <>{children}</>;
+}
+
+// ===== Wrapper: Members =====
+function MemberProjectRouteWrapper() {
+  const { projectId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation() as any;
+  const projectFromState = location.state?.project as
+    | { id: string; name?: string }
+    | undefined;
+
+  return (
+    <MemberProjectLogic
+      projectId={projectId!}
+      projectTitle={projectFromState?.name ?? "Project Members"}
+      canManage={true}
+      onBack={() => navigate(-1)}
+    />
+  );
+}
+
+// ===== Wrapper: Windfarms in Project =====
+function WindfarmRouteWrapper() {
+  return <WindfarmLogic />;
+}
+
+export default function App() {
+  return (
+    <UserProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* ================= Public ================= */}
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <LoginLogic />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/sign-up"
+            element={
+              <PublicRoute>
+                <SignUpLogic />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/otp-login"
+            element={
+              <PublicRoute>
+                <OtpLoginLogic />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/otp-sign-up"
+            element={
+              <PublicRoute>
+                <OtpSignupLogic />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicRoute>
+                <ForgotMailPasswordLogic />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/change-password"
+            element={
+              <PublicRoute>
+                <ForgotChangePasswordLogic />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/otp-forgot"
+            element={
+              <PublicRoute>
+                <OtpChangeLogic />
+              </PublicRoute>
+            }
+          />
+
+          {/* ================= Protected: có Sidebar ================= */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/project" element={<ProjectLogic />} />
+            <Route
+              path="/project-management"
+              element={<ProjectManagementLogic />}
+            />
+            <Route
+              path="/project-management/:projectId/members"
+              element={<MemberProjectRouteWrapper />}
+            />
+            <Route
+              path="/project/:projectId/windfarms"
+              element={<WindfarmRouteWrapper />}
+            />
+            <Route
+              path="/project/:projectId/windfarms/:windfarmId/turbines"
+              element={<TurbinePageLogic />}
+            />
+            <Route
+              path="/windfarm-management"
+              element={<WindfarmAdminLogic />}
+            />
+            <Route path="/setting" element={<SettingLogic />} />
+            <Route path="/sessions" element={<SessionsListLogic />} />
+            <Route path="/user" element={<UserManagementLogic />} />
+
+            {/* ✅ New: ManagePage (router con) */}
+            <Route path="/manage/*" element={<ManagePage />} />
+          </Route>
+
+          {/* ================= Wildcard ================= */}
+          <Route path="*" element={<Navigate to="/project" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </UserProvider>
+  );
+}  cho tôi code hoàn chỉnh app.tsx để chỉ render ra mỗi memberprojectpage , để tôi sửa và test giao diện ( đảm bảo render ra được nhé)
