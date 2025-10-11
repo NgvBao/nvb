@@ -26,7 +26,7 @@ import OtpChangeLogic from "./logic/OtpChangeLogic";
 // Protected pages (có Sidebar)
 import ProjectLogic from "./logic/ProjectLogic";
 import SettingLogic from "./logic/SettingLogic";
-import SessionsListLogic from "./logic/SessionsListLoic";
+import SessionsListLogic from "./logic/SessionsListLogic";
 import UserManagementLogic from "./logic/UserManagementLogic";
 import ProjectManagementLogic from "./logic/ProjectManagementLogic";
 import MemberProjectLogic from "./logic/MemberProjectLogic";
